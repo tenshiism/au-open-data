@@ -194,13 +194,15 @@ function renderPyramid() {
   }
   ds.forEach(d => d.grouped = false);
   upsert('pyr', 'pyrChart', { type: 'bar', data: { labels, datasets: ds },
-    options: base({ indexAxis: 'y', interaction: { mode: 'index', intersect: false },
+    // Horizontal bars: match hover on the y (age) axis, not the default x axis.
+    options: base({ indexAxis: 'y', interaction: { mode: 'index', axis: 'y', intersect: false },
       scales: { x: { grid: { display: true, color: css('--line-soft') }, ticks: { callback: v => Math.abs(v).toFixed(0) + '%' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } },
       plugins: { legend: { labels: { pointStyle: 'rectRounded', filter: i => i.text !== '_au' } },
         tooltip: { callbacks: { title: c => `Age ${c[0].label}`, label: c => c.dataset.label === '_au' ? ` Australia (F): ${Math.abs(c.raw).toFixed(2)}%` : ` ${c.dataset.label}${c.dataset.label === 'Australia' ? ' (M)' : ''}: ${Math.abs(c.raw).toFixed(2)}%` } } } }) });
   const under25 = r => r.slice(0, 5).reduce((s, x) => s + x[1] + x[2], 0), over65 = r => r.slice(13).reduce((s, x) => s + x[1] + x[2], 0);
   const sNat = share(p), aNat = share(au);
   $('pyrTitle').textContent = `Who lives in ${NAMES[st]}`;
+  $('pyrHint').textContent = 'Share of population by age and sex.' + (st === 'AUS' ? ' Pick a state to compare it with Australia.' : ' The outline shows Australia for comparison.');
   $('pyrSrc').textContent = `ABS ERP · ${D.population.period}`;
   $('pyrFinding').innerHTML = `<b>${under25(sNat).toFixed(1)}%</b> are under 25 and <b>${over65(sNat).toFixed(1)}%</b> are 65+` +
     (st === 'AUS' ? '.' : ` (Australia: ${under25(aNat).toFixed(1)}% and ${over65(aNat).toFixed(1)}%).`);
