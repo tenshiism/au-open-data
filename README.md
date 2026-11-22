@@ -4,9 +4,9 @@ Interactive data portfolio by Graham Jaroslow. Live: https://tenshiism.github.io
 
 | Project | Source |
 |---|---|
-| Victoria is warming (warming stripes) | Bureau of Meteorology ACORN-SAT annual mean temperature anomaly |
-| Rents vs wages | ABS CPI (rents, 8 capitals) and Wage Price Index, seasonally adjusted |
-| Where Australia is growing | ABS Estimated Resident Population by state |
+| Climate stripes + 10-yr trend, every state | Bureau of Meteorology ACORN-SAT annual mean temperature anomaly |
+| Rents vs wages, rebased to any year window | ABS CPI (rents, 8 capitals) and Wage Price Index, seasonally adjusted |
+| Age pyramids, tile map, growth momentum | ABS Estimated Resident Population by state |
 
 ## Rebuild the data
 ```
