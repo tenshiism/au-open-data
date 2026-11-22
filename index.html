@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graham Jaroslow · Data</title>
+<meta name="description" content="Data analysis portfolio built on Australian open data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d0f14; --surface-1:#1a1a19; --surface-2:#22232a; --line:#2e3038;
+  --text-primary:#f0efec; --text-secondary:#c3c2b7; --text-muted:#8b8a82;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  --div-cool:#3987e5; --div-warm:#e66767; --div-mid:#6b6a66;
+  --glow:radial-gradient(60% 80% at 20% 0%,#3987e533,transparent 70%),radial-gradient(50% 60% at 90% 10%,#d9592622,transparent 70%);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#f6f5f1; --surface-1:#fcfcfb; --surface-2:#ffffff; --line:#e2e0da;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#7a7972;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+    --div-cool:#2a78d6; --div-warm:#e34948; --div-mid:#c9c7c0;
+    --glow:radial-gradient(60% 80% at 20% 0%,#2a78d622,transparent 70%),radial-gradient(50% 60% at 90% 10%,#eb683418,transparent 70%);
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f6f5f1; --surface-1:#fcfcfb; --surface-2:#ffffff; --line:#e2e0da;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#7a7972;
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+  --div-cool:#2a78d6; --div-warm:#e34948; --div-mid:#c9c7c0;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);background-image:var(--glow);background-repeat:no-repeat;color:var(--text-primary);font:16px/1.6 Inter,system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;font-weight:700}
+nav a{color:var(--text-secondary);text-decoration:none;margin-left:20px;font-weight:500}
+nav a:hover{color:var(--text-primary)}
+.hero{padding:72px 0 48px}
+.hero h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.05;font-weight:800;letter-spacing:-.03em}
+.hero h1 span{background:linear-gradient(90deg,var(--series-1),var(--series-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:620px;color:var(--text-secondary);margin-top:18px;font-size:1.1rem}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.tags span{font:500 .8rem 'JetBrains Mono',monospace;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--text-secondary)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0 56px}
+.stat{background:var(--surface-1);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stat b{display:block;font-size:2rem;font-weight:800;letter-spacing:-.02em}
+.stat small{color:var(--text-muted)}
+.project{background:var(--surface-1);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:28px}
+.project header{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:baseline}
+.project h2{font-size:1.5rem;letter-spacing:-.02em}
+.project .src{font:500 .75rem 'JetBrains Mono',monospace;color:var(--text-muted)}
+.project p.lede{color:var(--text-secondary);margin:8px 0 20px;max-width:720px}
+.chart{position:relative;height:340px}
+.stripes{display:flex;height:120px;border-radius:10px;overflow:hidden;margin-bottom:18px;gap:0}
+.stripes div{flex:1;cursor:crosshair}
+.finding{margin-top:18px;padding:14px 16px;border-left:3px solid var(--series-1);background:var(--surface-2);border-radius:0 10px 10px 0;color:var(--text-secondary)}
+.finding b{color:var(--text-primary)}
+.badge{display:none;font:600 .75rem 'JetBrains Mono',monospace;color:#1a1a19;background:#c98500;padding:3px 8px;border-radius:6px;margin-left:8px}
+.sample .badge{display:inline-block}
+details{margin-top:14px;color:var(--text-secondary)}
+summary{cursor:pointer;font-size:.9rem}
+table{border-collapse:collapse;margin-top:8px;font-size:.85rem;width:100%}
+td,th{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right}
+td:first-child,th:first-child{text-align:left}
+.tip{position:fixed;pointer-events:none;background:var(--surface-2);border:1px solid var(--line);padding:6px 10px;border-radius:8px;font-size:.85rem;display:none;z-index:9}
+footer{padding:48px 0;color:var(--text-muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:40px}
+footer a{color:var(--text-secondary)}
+@media (max-width:600px){nav a{margin-left:12px}.project{padding:18px}.chart{height:280px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><span>GJ<span style="color:var(--series-1)">.</span>data</span>
+    <div><a href="#climate">Climate</a><a href="#housing">Housing</a><a href="#people">Population</a><a href="#contact">Contact</a></div></nav>
+
+  <section class="hero">
+    <h1>Australia, told<br>through <span>open data</span>.</h1>
+    <p>I'm Graham, a Melbourne-based analyst and developer (Python, SQL, Django, AWS), fluent in Japanese.
+       Each project below starts as a raw public dataset and goes through a reproducible Python pipeline to an interactive chart.</p>
+    <div class="tags"><span>python</span><span>pandas</span><span>sql</span><span>etl</span><span>data viz</span><span>abs</span><span>bom</span><span>data.gov.au</span></div>
+  </section>
+
+  <div class="stats" id="stats"></div>
+
+  <section class="project" id="climate">
+    <header><h2>Victoria is warming<span class="badge">SAMPLE DATA</span></h2><span class="src">Source: Bureau of Meteorology ACORN-SAT · Victoria annual mean temperature anomaly vs 1961–1990</span></header>
+    <p class="lede">Each stripe is one year, coloured by how far Victoria's mean temperature sat above (red) or below (blue) the 1961–1990 average. Hover a stripe for the value.</p>
+    <div class="stripes" id="stripes" role="img" aria-label="Warming stripes, one per year"></div>
+    <div class="chart"><canvas id="climateChart"></canvas></div>
+    <div class="finding" id="climateFinding"></div>
+    <details><summary>View data table</summary><div id="climateTable"></div></details>
+  </section>
+
+  <section class="project" id="housing">
+    <header><h2>Rents vs wages<span class="badge">SAMPLE DATA</span></h2><span class="src">Source: ABS CPI rents (8 capital cities) · ABS Wage Price Index (Australia) · seasonally adjusted, 2005 = 100</span></header>
+    <p class="lede">Both series are indexed to the same base year so they share one axis: when the rent line pulls above the wage line, renting is getting less affordable.</p>
+    <div class="chart"><canvas id="housingChart"></canvas></div>
+    <div class="finding" id="housingFinding"></div>
+    <details><summary>View data table</summary><div id="housingTable"></div></details>
+  </section>
+
+  <section class="project" id="people">
+    <header><h2>Where Australia is growing<span class="badge">SAMPLE DATA</span></h2><span class="src">Source: ABS Estimated Resident Population · year to 2026-Q1</span></header>
+    <p class="lede">Population growth over the year to March 2026 by state and territory, sorted by growth.</p>
+    <div class="chart"><canvas id="popChart"></canvas></div>
+    <div class="finding" id="popFinding"></div>
+    <details><summary>View data table</summary><div id="popTable"></div></details>
+  </section>
+
+  <footer id="contact">
+    <p>Graham Jaroslow · Melbourne · <a href="https://github.com/tenshiism">GitHub</a></p>
+    <p>Pipelines and code: <a href="https://github.com/tenshiism/au-open-data">github.com/tenshiism/au-open-data</a></p>
+  </footer>
+</div>
+<div class="tip" id="tip"></div>
+<script src="app.js"></script>
+</body>
+</html>
