@@ -23,6 +23,12 @@ function hexMix(a, b, t) {
 function showTip(e, html) { tip.innerHTML = html; tip.style.display = 'block';
   const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8); tip.style.left = x + 'px'; tip.style.top = e.clientY + 14 + 'px'; }
 const hideTip = () => tip.style.display = 'none';
+// Touch devices fire a synthetic hover on tap but never a matching "leave", so the fixed-position
+// tooltip would stay on screen and ride along while scrolling. Hide it on scroll and on any tap elsewhere.
+addEventListener('scroll', hideTip, { passive: true });
+addEventListener('pointerdown', e => { if (!e.target.closest('#stripes, #tilemap .tile')) hideTip(); }, { passive: true });
+let tipTimer;
+const autoHide = e => { if (e.pointerType && e.pointerType !== 'mouse') { clearTimeout(tipTimer); tipTimer = setTimeout(hideTip, 1600); } };
 
 // ---------- derived metrics ----------
 function climateSeries(st) { return D.climate[st].filter(([y]) => y >= S.from && y <= S.to); }
@@ -76,8 +82,8 @@ function renderMap() {
   $('tilemap').querySelectorAll('.tile').forEach(g => {
     g.onclick = () => set({ state: S.state === g.dataset.s ? 'AUS' : g.dataset.s });
     g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } };
-    g.onmousemove = e => showTip(e, `<b>${NAMES[g.dataset.s]}</b><br>${$('metricSeg').querySelector('.on').textContent}: ${metricFmt[S.metric](metricVal[S.metric](g.dataset.s))}`);
-    g.onmouseleave = hideTip;
+    g.onpointermove = e => { if (e.pointerType === 'mouse') showTip(e, `<b>${NAMES[g.dataset.s]}</b><br>${$('metricSeg').querySelector('.on').textContent}: ${metricFmt[S.metric](metricVal[S.metric](g.dataset.s))}`); };
+    g.onpointerleave = hideTip;
   });
   $('ramp').style.background = `linear-gradient(90deg, ${hexMix(base, hue, .2)}, ${hue})`;
   $('rampMin').textContent = metricFmt[S.metric](lo); $('rampMax').textContent = metricFmt[S.metric](hi);
@@ -141,11 +147,11 @@ function buildStripes() {
   el.onpointerdown = e => { dragFrom = yearAt(e); el.setPointerCapture(e.pointerId); };
   el.onpointermove = e => {
     const y = yearAt(e), row = D.climate[S.state].find(r => r[0] === y);
-    if (row) showTip(e, `<b>${y}</b> · ${f2(row[1])}°C vs ${D.baseline}`);
     if (dragFrom !== null) { const a = Math.min(dragFrom, y), b = Math.max(dragFrom, y); if (b - a >= 5) set({ from: a, to: b }); }
+    if (row) showTip(e, `<b>${y}</b> · ${f2(row[1])}°C vs ${D.baseline}`);
   };
-  el.onpointerup = () => dragFrom = null;
-  el.onpointerleave = hideTip;
+  el.onpointerup = el.onpointercancel = e => { dragFrom = null; autoHide(e); };
+  el.onpointerleave = e => { if (e.pointerType === 'mouse') hideTip(); };
 }
 function renderClimate() {
   const st = S.state, all = D.climate[st], max = Math.max(...all.map(r => Math.abs(r[1])));
